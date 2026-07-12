@@ -16,6 +16,7 @@ class HomeController extends GetxController {
 
     final response = await Dio().get("https://api.freeapi.app/api/v1/todos");
     print(response.data);
+    //anasnaeem
 
     for (var element in response.data["data"]) {
       todoList.add(element["title"]);
