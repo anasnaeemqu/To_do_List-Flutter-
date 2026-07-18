@@ -1,33 +1,51 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:getx_examples/screens/todo_model.dart';
 
 class HomeController extends GetxController {
-  final List todoList = [];
+  final List<tododetail> todoList = [];
 
   @override
-  onInit(){
+  onInit() {
     super.onInit();
     getTodoList();
     getcurrentUser();
   }
 
   getTodoList() async {
-
     final response = await Dio().get("https://api.freeapi.app/api/v1/todos");
     print(response.data);
     //anasnaeem
+    todoList.clear();
+    // for (var element in response.data["data"]) {
+    //   todoList.add(element["title"]);
+    //   // todoList.add(element["description"]);
+    // }
 
-    for (var element in response.data["data"]) {
-      todoList.add(element["title"]);
-    }
+    todoList.addAll(TodoDataModel.fromJson(response.data).data);
+    update();
   }
 
   getcurrentUser() async {
-    final response = await Dio().get("https://api.freeapi.app/api/v1/users/current-user", options: Options(headers: {
-      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTUzOTM3MTM4OTNmYjhmOWUxNWI0MjQiLCJlbWFpbCI6InVzZXIuYW5hc0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImFuYXNuYWVlbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc4Mzg2MjE3OCwiZXhwIjoxNzgzOTQ4NTc4fQ.yeHAqGbkpPk48vbL-hvAC6D3nDuDNcjFxSBd1xtCspM"
-    }));
+    final response = await Dio().get(
+      "https://api.freeapi.app/api/v1/users/current-user",
+      options: Options(
+        headers: {
+          "Authorization":
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTUzOTM3MTM4OTNmYjhmOWUxNWI0MjQiLCJlbWFpbCI6InVzZXIuYW5hc0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImFuYXNuYWVlbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc4Mzg2MjE3OCwiZXhwIjoxNzgzOTQ4NTc4fQ.yeHAqGbkpPk48vbL-hvAC6D3nDuDNcjFxSBd1xtCspM",
+        },
+      ),
+    );
     print(response.data);
+  }
+
+  createTodo({required String title, required String description}) async {
+    await Dio().post(
+      "https://api.freeapi.app/api/v1/todos/",
+      data: {"description": description, "title": title},
+    );
+    await getTodoList();
   }
 
   //  void deleteTodo(int index) {
@@ -41,7 +59,7 @@ class HomeController extends GetxController {
 
   void editTodo(int index) {
     TextEditingController controller = TextEditingController(
-      text: todoList[index],
+      text: todoList[index].title,
     );
 
     Get.dialog(
@@ -74,7 +92,7 @@ class HomeController extends GetxController {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Get.back(), 
+                      onPressed: () => Get.back(),
                       child: Text("Cancel"),
                     ),
                   ),
@@ -82,10 +100,9 @@ class HomeController extends GetxController {
                     child: ElevatedButton(
                       onPressed: () {
                         if (controller.text.trim().isNotEmpty) {
-                          todoList[index] = controller.text
-                              .trim(); 
+                          // todoList[index] = controller.text.trim();
                           Get.back();
-                          update(); 
+                          update();
                         }
                       },
                       style: ButtonStyle(
@@ -107,7 +124,9 @@ class HomeController extends GetxController {
   }
 
   void addTodo(BuildContext context) {
-    TextEditingController controller = TextEditingController();
+    TextEditingController textcontroller = TextEditingController();
+    TextEditingController descriptioncontroller = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -124,11 +143,23 @@ class HomeController extends GetxController {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextField(
-                  controller: controller,
+                  controller: textcontroller,
+                  minLines: 1,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    hintText: "Write your text",
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black38),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                TextField(
+                  controller: descriptioncontroller,
                   minLines: 4,
                   maxLines: 5,
                   decoration: InputDecoration(
-                    hintText: "Write your text",
+                    hintText: "Description",
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black38),
                       borderRadius: BorderRadius.circular(12),
@@ -149,7 +180,11 @@ class HomeController extends GetxController {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          todoList.add(controller.text);
+                          // todoList.add(controller.text);
+                          createTodo(
+                            title: textcontroller.text,
+                            description: descriptioncontroller.text,
+                          );
                           Navigator.pop(context);
                           update();
                         },
@@ -171,6 +206,6 @@ class HomeController extends GetxController {
           ),
         );
       },
-    );
+    );  
   }
 }

@@ -110,7 +110,7 @@ class HomeView extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  controller.todoList[index],
+                                  controller.todoList[index].title?? "",
                                   style: TextStyle(
                                     fontSize: 24,
                                     color: Colors.white,
