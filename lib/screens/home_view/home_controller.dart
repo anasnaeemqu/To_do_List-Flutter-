@@ -52,8 +52,10 @@ class HomeController extends GetxController {
   //   todoList.removeAt(index);
   //   update();
   // }
-  void deleteTodo(int index) {
-    todoList.removeAt(index);
+  void deleteTodo({required String? todoId}) async {
+    await Dio().delete("https://api.freeapi.app/api/v1/todos/$todoId");
+    await getTodoList();
+    // todoList.removeAt(index);
     update();
   }
 
@@ -206,6 +208,6 @@ class HomeController extends GetxController {
           ),
         );
       },
-    );  
+    );
   }
 }
